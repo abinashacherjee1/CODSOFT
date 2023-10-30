@@ -1,0 +1,165 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Scanner;
+
+class Course {
+    String code;
+    String title;
+    String description;
+    int capacity;
+    List<Student> students = new ArrayList<>();
+
+    public Course(String code, String title, String description, int capacity) {
+        this.code = code;
+        this.title = title;
+        this.description = description;
+        this.capacity = capacity;
+    }
+}
+
+class Student {
+    int studentID;
+    String name;
+    List<Course> registeredCourses = new ArrayList<>();
+
+    public Student(int studentID, String name) {
+        this.studentID = studentID;
+        this.name = name;
+    }
+}
+
+public class CourseRegistrationSystem {
+    private static Map<String, Course> courseDatabase = new HashMap<>();
+    private static Map<Integer, Student> studentDatabase = new HashMap<>();
+    private static int studentIDCounter = 1;
+    private static int courseCodeCounter = 1;
+
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        while (true) {
+            System.out.println("\nCourse Registration System");
+            System.out.println("1. Add a Course");
+            System.out.println("2. Register a Student");
+            System.out.println("3. List Courses");
+            System.out.println("4. Register Student for a Course");
+            System.out.println("5. Drop a Course");
+            System.out.println("6. Exit");
+            System.out.print("Enter your choice: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    addCourse(scanner);
+                    break;
+                case 2:
+                    registerStudent(scanner);
+                    break;
+                case 3:
+                    listCourses();
+                    break;
+                case 4:
+                    registerStudentForCourse(scanner);
+                    break;
+                case 5:
+                    dropCourse(scanner);
+                    break;
+                case 6:
+                    System.out.println("Goodbye!");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please try again.");
+            }
+        }
+    }
+
+    private static void addCourse(Scanner scanner) {
+        System.out.print("Enter course title: ");
+        String title = scanner.nextLine();
+        System.out.print("Enter course description: ");
+        String description = scanner.nextLine();
+        System.out.print("Enter course capacity: ");
+        int capacity = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+
+        String code = "C" + courseCodeCounter++;
+        Course course = new Course(code, title, description, capacity);
+        courseDatabase.put(code, course);
+        System.out.println("Course added successfully. Course code: " + code);
+    }
+
+    private static void registerStudent(Scanner scanner) {
+        System.out.print("Enter student name: ");
+        String name = scanner.nextLine();
+        int studentID = studentIDCounter++;
+
+        Student student = new Student(studentID, name);
+        studentDatabase.put(studentID, student);
+        System.out.println("Student registered successfully. Student ID: " + studentID);
+    }
+
+    private static void listCourses() {
+        System.out.println("Available Courses:");
+        for (Course course : courseDatabase.values()) {
+            int availableSlots = course.capacity - course.students.size();
+            System.out.println("Course Code: " + course.code);
+            System.out.println("Title: " + course.title);
+            System.out.println("Description: " + course.description);
+            System.out.println("Available Slots: " + availableSlots);
+            System.out.println();
+        }
+    }
+
+    private static void registerStudentForCourse(Scanner scanner) {
+        System.out.print("Enter student ID: ");
+        int studentID = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter course code to register for: ");
+        String courseCode = scanner.nextLine();
+
+        Student student = studentDatabase.get(studentID);
+        Course course = courseDatabase.get(courseCode);
+
+        if (student == null) {
+            System.out.println("Student not found.");
+        } else if (course == null) {
+            System.out.println("Course not found.");
+        } else if (student.registeredCourses.size() >= 3) {
+            System.out.println("Student has reached the maximum course registration limit.");
+        } else if (course.students.size() >= course.capacity) {
+            System.out.println("Course is full. Student registration failed.");
+        } else {
+            course.students.add(student);
+            student.registeredCourses.add(course);
+            System.out.println("Student registered for the course.");
+        }
+    }
+
+    private static void dropCourse(Scanner scanner) {
+        System.out.print("Enter student ID: ");
+        int studentID = scanner.nextInt();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter course code to drop: ");
+        String courseCode = scanner.nextLine();
+
+        Student student = studentDatabase.get(studentID);
+        Course course = courseDatabase.get(courseCode);
+
+        if (student == null) {
+            System.out.println("Student not found.");
+        } else if (course == null) {
+            System.out.println("Course not found.");
+        } else if (student.registeredCourses.contains(course)) {
+            course.students.remove(student);
+            student.registeredCourses.remove(course);
+            System.out.println("Course dropped successfully.");
+        } else {
+            System.out.println("Course not found in the student's registration.");
+        }
+    }
+}
+
